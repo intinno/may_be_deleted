@@ -1,0 +1,27 @@
+h1. May Be Deleted
+
+This plugin is meant to be used in conjuction with <a href="http://github.com/technoweenie/acts_as_paranoid">acts_as_paranoid</a>. 
+
+h3. Requirement / Use
+
+Sometimes details of a record may be required, even if it has been deleted. 
+
+For example consider a case of an ERP application where a user had created some data. User left the organization and hence was deleted from the system. Our application displays the name of creator while rendering any data. Thus a deleted user record needs to be found when displaying such data.
+
+A better use is explained in <a href="http://tiduhere.blogspot.com/2009/09/view-and-edit-deleted-records-with.html">this blog article</a>.
+
+
+h3. Usgae
+
+Suppose we need to show the author_name of a deleted article.
+
+We can write like:
+
+<pre>@article.force_find("author").name</pre>
+
+assuming that article belongs_to author
+
+<pre>belongs_to :author, class_name => "User"</pre>
+
+
+Copyright (c) 2009 Udit Sajjanhar, Intinno Technologies Pvt. Ltd.
