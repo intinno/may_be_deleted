@@ -34,28 +34,35 @@ module MayBeDeleted
 
   module InstanceMethods
     def force_find(association_name)
+      associate = self.send("#{association_name}")
       association = self.class.find_association(association_name)
       if association 
         klass = association.class_name.constantize
         if klass.respond_to?("acts_as_paranoid")
           if self.class.singular_association?(association)
-            id = self.send("#{association.primary_key_name}")
-            klass.find_with_deleted(:first, :conditions => "id = #{id}") rescue nil
-          else
-            #will "#{association_name.singularize}_ids" work in all cases???
-            ids = self.send("#{association_name.singularize}_ids")
-            klass.find_with_deleted(:all, :conditions => "ids in (#{ids.join(",")})") rescue []
+            if associate.nil? 
+              key = association.primary_key_name
+              if self.class.belongs_to?(association)
+                polymorphic = association.options[:polymorphic]
+                klass = self.send("#{association.options[:foreign_type]}").constantize if polymorphic
+                id = self.send("#{key}")
+                return klass.find_with_deleted(:first, :conditions => "id = #{id}") rescue nil
+              else
+                as = association.options[:as]
+                if as
+                  type_field = "#{as.to_s}_type"
+                  return klass.find_with_deleted(:first, :conditions => "#{key} = #{self.id} and #{type_field} = '#{self.class.to_s}'") rescue nil
+                else
+                  return klass.find_with_deleted(:first, :conditions => "#{key} = #{self.id}") rescue nil
+                end
+              end
+            end
           end
-        else
-          self.send("#{association_name}")
         end
-      else
-        nil
       end
+      return associate
     end
-
   end
-
 
 end
 
